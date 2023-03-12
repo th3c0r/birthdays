@@ -1,5 +1,5 @@
 use crate::validator::validate_date_for_birthday;
-use std::{default::Default, io::Write};
+use std::default::Default;
 
 const MAX_PERSONS: usize = 10;
 
@@ -88,10 +88,6 @@ impl Birthdays {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::{
-        borrow::Borrow,
-        io::{self, Write},
-    };
 
     #[test]
     fn test_new() {

@@ -56,16 +56,3 @@ pub fn menu() -> MenuOptions {
         _ => todo!(),
     }
 }
-
-//write me a test
-#[cfg(test)]
-mod tests {
-    use std::io::Stdin;
-
-    use super::*;
-
-    #[test]
-    fn test_menu() {
-        {}
-    }
-}
