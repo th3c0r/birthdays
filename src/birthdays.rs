@@ -1,3 +1,4 @@
+use crate::validator::validate_date_for_birthday;
 use std::{default::Default, io::Write};
 
 const MAX_PERSONS: usize = 10;
@@ -9,8 +10,8 @@ const MAX_PERSONS: usize = 10;
 #[derive(Clone)]
 pub struct Entry {
     name: String,
-    birth_day: u32,
-    birth_month: u32,
+    birth_day: u8,
+    birth_month: u8,
 }
 
 impl Default for Entry {
@@ -42,10 +43,13 @@ impl Birthdays {
     pub fn add(&mut self, entry: Entry) -> Result<(), String> {
         if self.friends.len() >= MAX_PERSONS {
             return Err("There is no enough space to save the entry".to_owned());
-        } else {
-            self.friends.push(entry);
-            return Ok(());
-        };
+        }
+
+        validate_date_for_birthday(entry.birth_day, entry.birth_month)?;
+
+        self.friends.push(entry);
+
+        Ok(())
     }
 
     fn size(self) -> usize {
@@ -57,8 +61,8 @@ impl Birthdays {
      */
     fn print_birthdays_to_writer(
         &self,
-        birth_day: u32,
-        birth_month: u32,
+        birth_day: u8,
+        birth_month: u8,
         mut writer: impl std::io::Write,
     ) {
         for friend in &self.friends {
@@ -76,7 +80,7 @@ impl Birthdays {
     /**
      * Search and prints the birthdays of a specific day and month to the stadard output
      */
-    pub fn print_birthdays(&self, birth_day: u32, birth_month: u32) {
+    pub fn print_birthdays(&self, birth_day: u8, birth_month: u8) {
         self.print_birthdays_to_writer(birth_day, birth_month, std::io::stdout());
     }
 }
@@ -84,7 +88,10 @@ impl Birthdays {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::io::{self, Write};
+    use std::{
+        borrow::Borrow,
+        io::{self, Write},
+    };
 
     #[test]
     fn test_new() {
@@ -111,8 +118,14 @@ mod tests {
     fn test_cannot_add_more_than_defined_size() {
         let mut store = Birthdays::new();
 
+        let entry = Entry {
+            name: "demo".to_owned(),
+            birth_day: 1,
+            birth_month: 1,
+        };
+
         for _i in 0..10 {
-            store.add(Entry::default()).unwrap();
+            store.add(entry.clone()).unwrap();
         }
 
         let res = store.add(Entry::default());
@@ -123,9 +136,14 @@ mod tests {
     #[test]
     fn test_size() {
         let mut store = Birthdays::new();
+        let entry = Entry {
+            name: "demo".to_owned(),
+            birth_day: 1,
+            birth_month: 1,
+        };
 
         for _i in 0..10 {
-            store.add(Entry::default()).unwrap();
+            store.add(entry.clone()).unwrap();
         }
 
         assert_eq!(store.size(), 10);
@@ -159,5 +177,66 @@ mod tests {
             entry.name, entry.birth_day, entry.birth_month
         );
         assert_eq!(buffer, required_output.as_bytes());
+    }
+
+    #[test]
+    fn test_that_cannot_create_birthday_with_invalid_month() {
+        struct BirthdayTest {
+            entry: Entry,
+            status: bool,
+        }
+
+        let mut tests = Vec::<BirthdayTest>::new();
+
+        tests.push(BirthdayTest {
+            entry: Entry {
+                name: "Test 01".to_owned(),
+                birth_day: 14,
+                birth_month: 9,
+            },
+            status: true,
+        });
+
+        tests.push(BirthdayTest {
+            entry: Entry {
+                name: "Test 02".to_owned(),
+                birth_day: 34,
+                birth_month: 3,
+            },
+            status: false,
+        });
+
+        tests.push(BirthdayTest {
+            entry: Entry {
+                name: "Test 03".to_owned(),
+                birth_month: 3,
+                birth_day: 29,
+            },
+            status: true,
+        });
+
+        tests.push(BirthdayTest {
+            entry: Entry {
+                name: "Test 04".to_owned(),
+                birth_day: 30,
+                birth_month: 02,
+            },
+            status: false,
+        });
+
+        let mut store = Birthdays::new();
+
+        for test in tests {
+            let res = match store.add(test.entry.clone()) {
+                Ok(_) => true,
+                Err(_) => false,
+            };
+
+            assert_eq!(
+                res, test.status,
+                "We have proglem to the {}/{}",
+                test.entry.birth_day, test.entry.birth_month
+            );
+        }
     }
 }
