@@ -2,6 +2,7 @@
 #![allow(dead_code)]
 
 mod menu;
+mod validator;
 use menu::{menu, MenuOptions};
 
 mod birthdays;
