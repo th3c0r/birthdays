@@ -7,31 +7,19 @@ const MAX_PERSONS: usize = 10;
  * Entry struct to keep each friend name and birthday data
  *
  */
-#[derive(Clone)]
-pub struct Entry {
-    name: String,
+#[derive(Clone, Debug, PartialEq, Default)]
+pub struct Entry<'a> {
+    name: &'a str,
     birth_day: u8,
     birth_month: u8,
 }
 
-impl Default for Entry {
-    fn default() -> Self {
-        Entry {
-            name: String::new(),
-            birth_day: 0,
-            birth_month: 0,
-        }
-    }
+#[derive(Clone, Debug)]
+pub struct Birthdays<'a> {
+    pub friends: Vec<Entry<'a>>,
 }
 
-/**
- * A store to keep the birthdays
- */
-pub struct Birthdays {
-    pub friends: Vec<Entry>,
-}
-
-impl Birthdays {
+impl<'a> Birthdays<'a> {
     pub fn new() -> Self {
         let friends: Vec<Entry> = Vec::with_capacity(MAX_PERSONS as usize);
         Birthdays { friends }
@@ -40,7 +28,7 @@ impl Birthdays {
     /**
      * Add a new entry to the store
      */
-    pub fn add(&mut self, entry: Entry) -> Result<(), String> {
+    pub fn add(&mut self, entry: Entry<'a>) -> Result<(), String> {
         if self.friends.len() >= MAX_PERSONS {
             return Err("There is no enough space to save the entry".to_owned());
         }
@@ -100,7 +88,7 @@ mod tests {
         let mut store = Birthdays::new();
 
         let b = Entry {
-            name: String::from("John"),
+            name: "John",
             birth_day: 20,
             birth_month: 2,
         };
@@ -115,7 +103,7 @@ mod tests {
         let mut store = Birthdays::new();
 
         let entry = Entry {
-            name: "demo".to_owned(),
+            name: "demo",
             birth_day: 1,
             birth_month: 1,
         };
@@ -133,7 +121,7 @@ mod tests {
     fn test_size() {
         let mut store = Birthdays::new();
         let entry = Entry {
-            name: "demo".to_owned(),
+            name: "demo",
             birth_day: 1,
             birth_month: 1,
         };
@@ -150,13 +138,13 @@ mod tests {
         let mut store = Birthdays::new();
 
         let entry = Entry {
-            name: "john".to_owned(),
+            name: "john",
             birth_day: 01,
             birth_month: 02,
         };
 
         let entry2 = Entry {
-            name: "Bill".to_owned(),
+            name: "Bill",
             birth_day: 3,
             birth_month: 10,
         };
@@ -177,8 +165,8 @@ mod tests {
 
     #[test]
     fn test_that_cannot_create_birthday_with_invalid_month() {
-        struct BirthdayTest {
-            entry: Entry,
+        struct BirthdayTest<'a> {
+            entry: Entry<'a>,
             status: bool,
         }
 
@@ -186,7 +174,7 @@ mod tests {
 
         tests.push(BirthdayTest {
             entry: Entry {
-                name: "Test 01".to_owned(),
+                name: "Test 01",
                 birth_day: 14,
                 birth_month: 9,
             },
@@ -195,7 +183,7 @@ mod tests {
 
         tests.push(BirthdayTest {
             entry: Entry {
-                name: "Test 02".to_owned(),
+                name: "Test 02",
                 birth_day: 34,
                 birth_month: 3,
             },
@@ -204,7 +192,7 @@ mod tests {
 
         tests.push(BirthdayTest {
             entry: Entry {
-                name: "Test 03".to_owned(),
+                name: "Test 03",
                 birth_month: 3,
                 birth_day: 29,
             },
@@ -213,7 +201,7 @@ mod tests {
 
         tests.push(BirthdayTest {
             entry: Entry {
-                name: "Test 04".to_owned(),
+                name: "Test 04",
                 birth_day: 30,
                 birth_month: 02,
             },
